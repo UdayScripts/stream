@@ -14,9 +14,11 @@ export function parseM3U(content: string): IPTVChannel[] {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
+    if (!line) continue;
 
     if (line.startsWith('#EXTINF:')) {
-      // Parse metadata
+      // Parse metadata using regex for better accuracy
+      // Standard format: #EXTINF:-1 tvg-id="ID" tvg-logo="URL" group-title="Group",Channel Name
       const nameMatch = line.match(/,(.*)$/);
       const logoMatch = line.match(/tvg-logo="([^"]*)"/);
       const groupMatch = line.match(/group-title="([^"]*)"/);
@@ -29,7 +31,7 @@ export function parseM3U(content: string): IPTVChannel[] {
         category: groupMatch ? groupMatch[1] : 'General',
         id: idMatch ? idMatch[1] : Math.random().toString(36).substr(2, 9),
       };
-    } else if (line.startsWith('http')) {
+    } else if (line.startsWith('http') || line.includes('://')) {
       // Stream URL
       if (currentChannel.name) {
         currentChannel.url = line;
