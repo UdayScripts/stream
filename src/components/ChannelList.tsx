@@ -115,9 +115,9 @@ export default function ChannelList({ channels, onSelectChannel, selectedChannel
               <p className="text-sm">No channels found</p>
             </div>
           ) : (
-            filteredChannels.map((channel) => (
+            filteredChannels.map((channel, index) => (
               <button
-                key={`${channel.id}-${channel.url}`}
+                key={`${channel.id}-${index}-${channel.url}`}
                 onClick={() => onSelectChannel(channel)}
                 className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all group ${
                   selectedChannelId === channel.id 
