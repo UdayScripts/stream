@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, List, Play, History, Globe, Trash2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { parseM3U, IPTVChannel } from '@/lib/m3u-parser';
 import StreamPlayer from '@/components/StreamPlayer';
 import ChannelList from '@/components/ChannelList';
