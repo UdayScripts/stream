@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Sparkles, Tv, Loader2 } from 'lucide-react';
+import { Search, Sparkles, Tv, Loader2, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { IPTVChannel } from '@/lib/m3u-parser';
@@ -43,7 +43,6 @@ export default function ChannelList({ channels, onSelectChannel, selectedChannel
     if (channels.length === 0) return;
     setIsCategorizing(true);
     try {
-      // Limit to first 50 channels for AI to prevent huge payloads for this demo tool
       const namesToCategorize = channels.slice(0, 50).map(c => c.name);
       const result = await categorizePlaylist({ channelNames: namesToCategorize });
       
@@ -60,34 +59,34 @@ export default function ChannelList({ channels, onSelectChannel, selectedChannel
   };
 
   return (
-    <div className="flex flex-col h-full bg-card/50 rounded-xl border border-white/5 overflow-hidden">
-      <div className="p-4 space-y-4 border-b border-white/5 bg-card/80 backdrop-blur-md">
+    <div className="flex flex-col h-full bg-card/50 lg:rounded-xl border-none lg:border lg:border-white/5 overflow-hidden">
+      <div className="p-3 md:p-4 space-y-3 border-b border-white/5 bg-card/80 backdrop-blur-md">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search channels..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-background/50 border-white/10"
+            className="pl-9 bg-background/50 border-white/10 h-9"
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           <Button
             variant={selectedCategory === null ? "default" : "outline"}
             size="sm"
             onClick={() => setSelectedCategory(null)}
-            className="text-xs h-7 rounded-full"
+            className="text-[10px] h-6 px-3 rounded-full flex-shrink-0"
           >
             All
           </Button>
-          {categories.slice(0, 5).map(cat => (
+          {categories.slice(0, 8).map(cat => (
             <Button
               key={cat}
               variant={selectedCategory === cat ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedCategory(cat)}
-              className="text-xs h-7 rounded-full"
+              className="text-[10px] h-6 px-3 rounded-full flex-shrink-0"
             >
               {cat}
             </Button>
@@ -98,10 +97,10 @@ export default function ChannelList({ channels, onSelectChannel, selectedChannel
               size="sm"
               onClick={handleAiCategorize}
               disabled={isCategorizing}
-              className="text-xs h-7 rounded-full border-primary/30 hover:border-primary/60 text-primary"
+              className="text-[10px] h-6 px-3 rounded-full border-primary/30 hover:border-primary/60 text-primary flex-shrink-0"
             >
-              {isCategorizing ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Sparkles className="w-3 h-3 mr-1" />}
-              AI Categorize
+              {isCategorizing ? <Loader2 className="w-2.5 h-2.5 animate-spin mr-1" /> : <Sparkles className="w-2.5 h-2.5 mr-1" />}
+              AI
             </Button>
           )}
         </div>
@@ -117,37 +116,40 @@ export default function ChannelList({ channels, onSelectChannel, selectedChannel
           ) : (
             filteredChannels.map((channel, index) => (
               <button
-                key={`${channel.id}-${index}-${channel.url}`}
+                key={`${channel.id}-${index}`}
                 onClick={() => onSelectChannel(channel)}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all group ${
+                className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all group ${
                   selectedChannelId === channel.id 
                     ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
                     : 'hover:bg-white/5 text-foreground/80 hover:text-foreground'
                 }`}
               >
-                <div className={`w-10 h-10 rounded-md bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 ${
+                <div className={`w-9 h-9 rounded-md bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 ${
                   selectedChannelId === channel.id ? 'bg-white/20' : ''
                 }`}>
                   {channel.logo ? (
-                    <img src={channel.logo} alt={channel.name} className="w-full h-full object-contain" />
+                    <img src={channel.logo} alt="" className="w-full h-full object-contain" />
                   ) : (
-                    <Tv className={`w-5 h-5 ${selectedChannelId === channel.id ? 'text-white' : 'text-muted-foreground'}`} />
+                    <Tv className={`w-4 h-4 ${selectedChannelId === channel.id ? 'text-white' : 'text-muted-foreground'}`} />
                   )}
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm font-semibold truncate">{channel.name}</p>
-                  <p className={`text-xs truncate ${selectedChannelId === channel.id ? 'text-white/70' : 'text-muted-foreground'}`}>
+                  <p className="text-xs font-semibold truncate leading-tight mb-0.5">{channel.name}</p>
+                  <p className={`text-[10px] truncate ${selectedChannelId === channel.id ? 'text-white/70' : 'text-muted-foreground'}`}>
                     {aiCategories[channel.name] || channel.category || 'General'}
                   </p>
                 </div>
+                {selectedChannelId === channel.id && (
+                  <ChevronRight className="w-3 h-3 flex-shrink-0" />
+                )}
               </button>
             ))
           )}
         </div>
       </ScrollArea>
       
-      <div className="p-3 border-t border-white/5 bg-card/80 text-[10px] text-muted-foreground text-center">
-        {filteredChannels.length} Channels Loaded
+      <div className="p-2.5 border-t border-white/5 bg-card/80 text-[10px] text-muted-foreground text-center">
+        {filteredChannels.length} Channels
       </div>
     </div>
   );
