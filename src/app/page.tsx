@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Plus, List, Play, History, Globe, Trash2, ArrowRight, Menu } from 'lucide-react';
+import { Plus, List, Play, History, Globe, Trash2, ArrowRight, Menu, Zap, Shield, Layout } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -76,24 +76,24 @@ export default function StreamGlide() {
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
-      {/* Header */}
-      <header className="h-16 flex items-center justify-between px-4 md:px-6 border-b border-white/5 bg-card/30 backdrop-blur-xl z-20">
-        <div className="flex items-center gap-2">
+      {/* Immersive Header */}
+      <header className="h-20 flex items-center justify-between px-6 border-b border-white/5 bg-background/80 backdrop-blur-2xl z-30">
+        <div className="flex items-center gap-4">
           {channels.length > 0 && (
-            <div className="lg:hidden mr-1">
+            <div className="lg:hidden">
               <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 text-white">
-                    <Menu className="w-5 h-5" />
+                  <Button variant="ghost" size="icon" className="h-10 w-10 text-white hover:bg-white/10">
+                    <Menu className="w-6 h-6" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="p-0 w-[320px] bg-card border-r border-white/5">
-                  <SheetHeader className="p-4 border-b border-white/5">
+                <SheetContent side="left" className="p-0 w-80 bg-card border-r border-white/5">
+                  <SheetHeader className="p-6 border-b border-white/5">
                     <SheetTitle className="text-white flex items-center gap-2">
-                      <List className="w-5 h-5 text-primary" /> Channels
+                      <List className="w-5 h-5 text-primary" /> Channel Browser
                     </SheetTitle>
                   </SheetHeader>
-                  <div className="h-full">
+                  <div className="h-[calc(100%-80px)]">
                     <ChannelList
                       channels={channels}
                       onSelectChannel={handleChannelSelect}
@@ -104,128 +104,185 @@ export default function StreamGlide() {
               </Sheet>
             </div>
           )}
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <Play className="w-5 h-5 text-primary-foreground fill-current" />
+          <div className="flex items-center gap-3 group cursor-pointer" onClick={() => window.location.reload()}>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
+              <Play className="w-6 h-6 text-white fill-current" />
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="text-xl font-bold tracking-tight text-white">StreamGlide</h1>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Pro Edition</p>
+            </div>
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-white hidden sm:block">StreamGlide</h1>
         </div>
 
-        <div className="flex-1 max-w-2xl px-2 md:px-8 flex gap-2">
-          <div className="relative flex-1">
-            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground hidden xs:block" />
+        <div className="flex-1 max-w-2xl px-8">
+          <div className="relative group">
+            <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
-              placeholder="M3U URL..."
+              placeholder="Paste M3U playlist URL..."
               value={playlistUrl}
               onChange={(e) => setPlaylistUrl(e.target.value)}
-              className="pl-3 md:pl-9 bg-background/50 border-white/10 h-9 md:h-10 text-xs md:text-sm"
+              className="pl-11 pr-24 bg-white/5 border-white/10 h-11 text-sm rounded-full focus:ring-primary/50 transition-all"
               onKeyDown={(e) => e.key === 'Enter' && loadPlaylist(playlistUrl)}
             />
+            <Button 
+              onClick={() => loadPlaylist(playlistUrl)} 
+              disabled={isLoading} 
+              size="sm"
+              className="absolute right-1.5 top-1.5 h-8 rounded-full px-6 shadow-md"
+            >
+              {isLoading ? "Loading..." : "Load"}
+            </Button>
           </div>
-          <Button onClick={() => loadPlaylist(playlistUrl)} disabled={isLoading} className="h-9 md:h-10 px-3 md:px-4 text-xs md:text-sm">
-            {isLoading ? "..." : "Load"}
-          </Button>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden lg:flex flex-col items-end">
-            <p className="text-xs font-medium text-white/50">IPTV Player</p>
-          </div>
+          <Badge variant="outline" className="hidden xl:flex bg-primary/10 border-primary/20 text-primary px-3 py-1">
+            v2.0 Stable
+          </Badge>
         </div>
       </header>
 
       <main className="flex-1 flex overflow-hidden">
-        {/* Main Content Area */}
-        <div className="flex-1 p-3 md:p-6 overflow-y-auto bg-gradient-to-br from-background to-card/20">
-          <div className="max-w-6xl mx-auto space-y-4 md:space-y-6">
-            {/* Player Section */}
-            <div className="space-y-4">
+        {/* Main Cinema Area */}
+        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-background to-black/40 relative">
+          <div className="max-w-7xl mx-auto p-6 space-y-8">
+            {/* Player Container */}
+            <div className={`${selectedChannel ? 'aspect-video' : 'h-0'} transition-all duration-500 overflow-hidden`}>
               <StreamPlayer
                 url={selectedChannel?.url || ''}
                 title={selectedChannel?.name || 'No Channel Selected'}
               />
             </div>
 
-            {/* Saved Playlists Section (Shown if no channels loaded) */}
-            {channels.length === 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pt-4">
-                <div className="bg-card/40 border border-white/5 p-6 md:p-8 rounded-2xl flex flex-col items-center text-center justify-center space-y-4">
-                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-                    <Plus className="w-6 h-6 md:w-8 md:h-8" />
-                  </div>
-                  <h2 className="text-xl md:text-2xl font-bold text-white">Getting Started</h2>
-                  <p className="text-sm text-muted-foreground max-w-sm">
-                    Enter a valid M3U playlist URL above to browse and stream thousands of worldwide TV channels instantly.
-                  </p>
-                  <Button variant="outline" className="mt-2" onClick={() => loadPlaylist('https://iptv-org.github.io/iptv/index.m3u')}>
-                    Try Demo Playlist
-                  </Button>
-                </div>
-
-                <div className="bg-card/40 border border-white/5 p-6 md:p-8 rounded-2xl">
-                  <div className="flex items-center gap-2 mb-4 md:mb-6">
-                    <History className="w-5 h-5 text-primary" />
-                    <h3 className="text-lg md:text-xl font-bold text-white">Recent Playlists</h3>
-                  </div>
-                  <div className="space-y-3">
-                    {savedPlaylists.length === 0 ? (
-                      <p className="text-sm text-muted-foreground italic py-8 text-center border border-dashed border-white/10 rounded-xl">
-                        No recent playlists found
+            {/* Dashboard / Empty State */}
+            {!selectedChannel && (
+              <div className="space-y-12 py-12">
+                {channels.length === 0 && (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    <div className="lg:col-span-7 space-y-6">
+                      <h2 className="text-5xl md:text-6xl font-black text-white leading-tight">
+                        Your Personal <br/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Streaming Universe.</span>
+                      </h2>
+                      <p className="text-lg text-muted-foreground max-w-lg leading-relaxed">
+                        The world's most advanced IPTV player. Stream thousands of HD channels from any M3U playlist with AI-powered categorization and lightning-fast performance.
                       </p>
-                    ) : (
-                      savedPlaylists.map(url => (
-                        <div key={url} className="group flex items-center gap-2 p-3 bg-background/50 border border-white/5 rounded-xl hover:border-primary/50 transition-all cursor-pointer">
-                          <div className="flex-1 min-w-0" onClick={() => loadPlaylist(url)}>
-                            <p className="text-xs font-medium text-white truncate">{url}</p>
-                          </div>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                            onClick={() => removePlaylist(url)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                      <div className="flex flex-wrap gap-4 pt-4">
+                        <Button size="lg" className="rounded-full px-8 h-14 text-lg" onClick={() => loadPlaylist('https://iptv-org.github.io/iptv/index.m3u')}>
+                          Try Demo Playlist
+                        </Button>
+                        <Button variant="outline" size="lg" className="rounded-full px-8 h-14 text-lg border-white/10">
+                          Learn More
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="lg:col-span-5 grid grid-cols-2 gap-4">
+                      <div className="p-6 bg-card/50 border border-white/5 rounded-3xl space-y-4">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                          <Zap className="w-6 h-6" />
                         </div>
-                      ))
-                    )}
+                        <h3 className="font-bold text-white">Fast Play</h3>
+                        <p className="text-xs text-muted-foreground">Near-zero latency switching between HD streams.</p>
+                      </div>
+                      <div className="p-6 bg-card/50 border border-white/5 rounded-3xl space-y-4 translate-y-8">
+                        <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
+                          <Shield className="w-6 h-6" />
+                        </div>
+                        <h3 className="font-bold text-white">Secure</h3>
+                        <p className="text-xs text-muted-foreground">Privacy-focused streaming with no data tracking.</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Recent Section */}
+                {savedPlaylists.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <History className="w-5 h-5 text-primary" />
+                        <h3 className="text-xl font-bold text-white">Continue Watching</h3>
+                      </div>
+                      <Button variant="link" className="text-primary hover:text-primary/80">View All</Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {savedPlaylists.map(url => (
+                        <div key={url} className="group relative bg-card border border-white/5 rounded-2xl p-5 hover:border-primary/40 transition-all cursor-pointer overflow-hidden">
+                          <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive bg-black/50 backdrop-blur-md"
+                              onClick={(e) => { e.stopPropagation(); removePlaylist(url); }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className="space-y-3" onClick={() => loadPlaylist(url)}>
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                                <Globe className="w-5 h-5 text-muted-foreground" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-white truncate">Playlist Library</p>
+                                <p className="text-[10px] text-muted-foreground truncate uppercase tracking-tighter">{url}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-primary text-[10px] font-bold uppercase">
+                              <Play className="w-3 h-3 fill-current" /> Load Source
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Feature Highlights */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 pt-4">
-              <div className="p-4 rounded-xl bg-card/20 border border-white/5">
-                <h4 className="font-semibold text-white flex items-center gap-2 mb-2 text-sm">
-                  <Globe className="w-4 h-4 text-primary" /> Global Content
-                </h4>
-                <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">Stream channels from across the globe in HD quality with low latency.</p>
+            {/* Features Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-12 border-t border-white/5">
+              <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 flex gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                  <Layout className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-white text-sm mb-1">Global Reach</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Access streams from over 150 countries instantly.</p>
+                </div>
               </div>
-              <div className="p-4 rounded-xl bg-card/20 border border-white/5">
-                <h4 className="font-semibold text-white flex items-center gap-2 mb-2 text-sm">
-                  <List className="w-4 h-4 text-primary" /> Smart Management
-                </h4>
-                <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">Organize your favorite streams and playlists with ease and persistent storage.</p>
+              <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 flex gap-4">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent flex-shrink-0">
+                  <List className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-white text-sm mb-1">AI Smart List</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Automatically organized and categorized for you.</p>
+                </div>
               </div>
-              <div className="p-4 rounded-xl bg-card/20 border border-white/5">
-                <h4 className="font-semibold text-white flex items-center gap-2 mb-2 text-sm">
-                  <ArrowRight className="w-4 h-4 text-primary" /> AI Powered
-                </h4>
-                <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">Automatically categorize sparse playlists using advanced GenAI analysis.</p>
+              <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 flex gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                  <ArrowRight className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-white text-sm mb-1">HD Streaming</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Optimized playback for 4K and Full HD content.</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Desktop Sidebar - Channel List */}
+        {/* Sidebar - Pro Channel List */}
         {channels.length > 0 && (
-          <aside className="hidden lg:flex w-[380px] border-l border-white/5 bg-card/20 backdrop-blur-xl flex-col z-10 transition-transform">
-            <div className="p-4 flex items-center justify-between border-b border-white/5">
-              <div className="flex items-center gap-2">
-                <List className="w-5 h-5 text-primary" />
-                <h2 className="font-bold text-white">Channels</h2>
+          <aside className="hidden lg:flex w-96 border-l border-white/5 bg-card flex-col z-20 shadow-2xl shadow-black">
+            <div className="p-6 flex items-center justify-between border-b border-white/5">
+              <div>
+                <h2 className="font-bold text-lg text-white">Channels</h2>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Live Directory</p>
               </div>
-              <Badge variant="outline" className="bg-white/5 border-white/10 text-white/50">
+              <Badge variant="outline" className="bg-white/5 border-white/10 text-white font-mono">
                 {channels.length}
               </Badge>
             </div>

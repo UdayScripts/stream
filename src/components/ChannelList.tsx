@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Search, Sparkles, Tv, Loader2, ChevronRight } from 'lucide-react';
+import { Search, Sparkles, Tv, Loader2, ChevronRight, Activity } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { IPTVChannel } from '@/lib/m3u-parser';
@@ -59,34 +59,34 @@ export default function ChannelList({ channels, onSelectChannel, selectedChannel
   };
 
   return (
-    <div className="flex flex-col h-full bg-card/50 lg:rounded-xl border-none lg:border lg:border-white/5 overflow-hidden">
-      <div className="p-3 md:p-4 space-y-3 border-b border-white/5 bg-card/80 backdrop-blur-md">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+    <div className="flex flex-col h-full overflow-hidden bg-card/30">
+      <div className="p-4 space-y-4 border-b border-white/5 bg-card/60 backdrop-blur-xl">
+        <div className="relative group">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input
-            placeholder="Search channels..."
+            placeholder="Search channel or category..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-background/50 border-white/10 h-9"
+            className="pl-10 bg-black/20 border-white/5 h-10 rounded-xl focus:ring-primary/40"
           />
         </div>
 
-        <div className="flex flex-wrap gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+        <div className="flex flex-wrap gap-2 overflow-x-auto pb-1 no-scrollbar">
           <Button
-            variant={selectedCategory === null ? "default" : "outline"}
+            variant={selectedCategory === null ? "default" : "secondary"}
             size="sm"
             onClick={() => setSelectedCategory(null)}
-            className="text-[10px] h-6 px-3 rounded-full flex-shrink-0"
+            className="text-[10px] h-7 px-4 rounded-full font-bold uppercase tracking-tight"
           >
-            All
+            All Channels
           </Button>
           {categories.slice(0, 8).map(cat => (
             <Button
               key={cat}
-              variant={selectedCategory === cat ? "default" : "outline"}
+              variant={selectedCategory === cat ? "default" : "secondary"}
               size="sm"
               onClick={() => setSelectedCategory(cat)}
-              className="text-[10px] h-6 px-3 rounded-full flex-shrink-0"
+              className="text-[10px] h-7 px-4 rounded-full font-bold uppercase tracking-tight"
             >
               {cat}
             </Button>
@@ -97,50 +97,63 @@ export default function ChannelList({ channels, onSelectChannel, selectedChannel
               size="sm"
               onClick={handleAiCategorize}
               disabled={isCategorizing}
-              className="text-[10px] h-6 px-3 rounded-full border-primary/30 hover:border-primary/60 text-primary flex-shrink-0"
+              className="text-[10px] h-7 px-4 rounded-full border-primary/40 hover:border-primary text-primary font-bold uppercase tracking-tight bg-primary/5"
             >
-              {isCategorizing ? <Loader2 className="w-2.5 h-2.5 animate-spin mr-1" /> : <Sparkles className="w-2.5 h-2.5 mr-1" />}
-              AI
+              {isCategorizing ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : <Sparkles className="w-3 h-3 mr-1.5" />}
+              AI Categorize
             </Button>
           )}
         </div>
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="p-2 space-y-1">
+        <div className="p-3 space-y-2">
           {filteredChannels.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <Tv className="w-12 h-12 mb-2 opacity-10" />
-              <p className="text-sm">No channels found</p>
+            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground opacity-50">
+              <Tv className="w-16 h-16 mb-4" />
+              <p className="text-sm font-medium">No streams match your filter</p>
             </div>
           ) : (
             filteredChannels.map((channel, index) => (
               <button
                 key={`${channel.id}-${index}`}
                 onClick={() => onSelectChannel(channel)}
-                className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all group ${
+                className={`w-full flex items-center gap-4 p-3 rounded-2xl transition-all group relative overflow-hidden ${
                   selectedChannelId === channel.id 
-                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
-                    : 'hover:bg-white/5 text-foreground/80 hover:text-foreground'
+                    ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 scale-[1.02]' 
+                    : 'hover:bg-white/5 text-foreground/70 hover:text-foreground'
                 }`}
               >
-                <div className={`w-9 h-9 rounded-md bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 ${
+                <div className={`w-12 h-12 rounded-xl bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm transition-transform group-hover:scale-105 ${
                   selectedChannelId === channel.id ? 'bg-white/20' : ''
                 }`}>
                   {channel.logo ? (
                     <img src={channel.logo} alt="" className="w-full h-full object-contain" />
                   ) : (
-                    <Tv className={`w-4 h-4 ${selectedChannelId === channel.id ? 'text-white' : 'text-muted-foreground'}`} />
+                    <Tv className={`w-6 h-6 ${selectedChannelId === channel.id ? 'text-white' : 'text-muted-foreground'}`} />
                   )}
                 </div>
+                
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-xs font-semibold truncate leading-tight mb-0.5">{channel.name}</p>
-                  <p className={`text-[10px] truncate ${selectedChannelId === channel.id ? 'text-white/70' : 'text-muted-foreground'}`}>
-                    {aiCategories[channel.name] || channel.category || 'General'}
-                  </p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-bold truncate leading-tight">{channel.name}</p>
+                    {selectedChannelId === channel.id && <Activity className="w-3 h-3 animate-pulse" />}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Badge variant="outline" className={`text-[9px] px-1.5 py-0 border-none rounded-sm uppercase tracking-tighter ${
+                      selectedChannelId === channel.id ? 'bg-white/20 text-white' : 'bg-white/5 text-muted-foreground'
+                    }`}>
+                      {aiCategories[channel.name] || channel.category || 'General'}
+                    </Badge>
+                  </div>
                 </div>
-                {selectedChannelId === channel.id && (
-                  <ChevronRight className="w-3 h-3 flex-shrink-0" />
+
+                {selectedChannelId === channel.id ? (
+                  <ChevronRight className="w-5 h-5 text-white animate-bounce-x" />
+                ) : (
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Play className="w-4 h-4 text-primary" />
+                  </div>
                 )}
               </button>
             ))
@@ -148,8 +161,9 @@ export default function ChannelList({ channels, onSelectChannel, selectedChannel
         </div>
       </ScrollArea>
       
-      <div className="p-2.5 border-t border-white/5 bg-card/80 text-[10px] text-muted-foreground text-center">
-        {filteredChannels.length} Channels
+      <div className="p-4 border-t border-white/5 bg-black/20 text-[10px] text-muted-foreground flex items-center justify-between font-bold uppercase tracking-widest">
+        <span>Channel Count</span>
+        <span className="text-foreground">{filteredChannels.length}</span>
       </div>
     </div>
   );
