@@ -6,7 +6,7 @@ import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, AlertCircle, Loader
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 interface StreamPlayerProps {
   url: string;
@@ -15,11 +15,14 @@ interface StreamPlayerProps {
 
 export default function StreamPlayer({ url, title }: StreamPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -38,13 +41,11 @@ export default function StreamPlayer({ url, title }: StreamPlayerProps) {
         setIsPlaying(true);
         setIsLoading(false);
       }).catch((e) => {
-        console.error("Playback failed:", e);
         setIsPlaying(false);
         setIsLoading(false);
       });
     };
 
-    // Robust HLS detection
     const isHlsUrl = url.toLowerCase().includes('.m3u8') || url.toLowerCase().includes('type=m3u8');
 
     if (Hls.isSupported() && isHlsUrl) {
@@ -65,15 +66,14 @@ export default function StreamPlayer({ url, title }: StreamPlayerProps) {
         if (data.fatal) {
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              setError("Network error: The stream source might be offline or blocked.");
+              setError("Source offline or blocked.");
               hls?.startLoad();
               break;
             case Hls.ErrorTypes.MEDIA_ERROR:
-              setError("Media error: Trying to recover...");
               hls?.recoverMediaError();
               break;
             default:
-              setError("An unrecoverable playback error occurred.");
+              setError("Playback error.");
               hls?.destroy();
               break;
           }
@@ -81,27 +81,23 @@ export default function StreamPlayer({ url, title }: StreamPlayerProps) {
         }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Native HLS support (Safari)
       video.src = url;
       video.addEventListener('loadedmetadata', playVideo);
       video.addEventListener('error', () => {
-        setError("Playback failed. The stream might be offline or restricted.");
+        setError("Playback failed.");
         setIsLoading(false);
       });
     } else {
-      // Regular video source (MP4, etc.)
       video.src = url;
       video.addEventListener('loadedmetadata', playVideo);
       video.addEventListener('error', () => {
-        setError("Playback failed. This format might not be supported in your browser.");
+        setError("Format not supported.");
         setIsLoading(false);
       });
     }
 
     return () => {
-      if (hls) {
-        hls.destroy();
-      }
+      if (hls) hls.destroy();
       if (video) {
         video.pause();
         video.src = "";
@@ -109,6 +105,14 @@ export default function StreamPlayer({ url, title }: StreamPlayerProps) {
       }
     };
   }, [url]);
+
+  const handleMouseMove = () => {
+    setShowControls(true);
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    controlsTimeoutRef.current = setTimeout(() => {
+      if (isPlaying) setShowControls(false);
+    }, 3000);
+  };
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -139,22 +143,26 @@ export default function StreamPlayer({ url, title }: StreamPlayerProps) {
   };
 
   const toggleFullScreen = () => {
-    if (videoRef.current) {
+    if (containerRef.current) {
       if (document.fullscreenElement) {
         document.exitFullscreen();
       } else {
-        videoRef.current.requestFullscreen();
+        containerRef.current.requestFullscreen();
       }
     }
   };
 
   return (
-    <div className="relative group w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-white/5 flex items-center justify-center">
+    <div 
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      className="relative group w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-white/5 flex items-center justify-center"
+      style={{ cursor: showControls ? 'default' : 'none' }}
+    >
       {!url && (
-        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground flex-col gap-4">
-          <Play className="w-16 h-16 opacity-20" />
-          <p className="font-medium text-lg">Select a channel to start streaming</p>
-          <p className="text-sm opacity-50">Supports HLS (.m3u8) and MP4 streams</p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground/40 gap-4">
+          <Play className="w-20 h-20 opacity-20" />
+          <p className="font-medium text-lg tracking-tight">Select a channel to stream</p>
         </div>
       )}
       
@@ -162,50 +170,79 @@ export default function StreamPlayer({ url, title }: StreamPlayerProps) {
         <>
           <video
             ref={videoRef}
-            className="w-full h-full cursor-pointer"
+            className="w-full h-full object-contain"
             playsInline
             crossOrigin="anonymous"
             onClick={togglePlay}
           />
 
+          {/* Loading Overlay */}
           {isLoading && !error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-10">
-              <div className="flex flex-col items-center gap-3">
-                <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                <p className="text-sm font-medium text-white">Loading stream...</p>
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[2px] z-10">
+              <Loader2 className="w-12 h-12 text-primary animate-spin" />
+            </div>
+          )}
+
+          {/* Error Overlay */}
+          {error && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/90 p-6 z-20">
+              <div className="max-w-xs w-full text-center space-y-4">
+                <AlertCircle className="w-12 h-12 text-destructive mx-auto" />
+                <p className="text-sm font-medium text-white">{error}</p>
+                <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="w-full">
+                  Retry
+                </Button>
               </div>
             </div>
           )}
 
-          {error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-6 z-20">
-              <div className="max-w-md w-full space-y-4 text-center">
-                <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive text-left">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Playback Error</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-                <div className="flex flex-col gap-3 items-center">
-                  <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="gap-2">
-                    <RotateCcw className="w-4 h-4" /> Refresh Page
-                  </Button>
-                  <p className="text-[10px] text-muted-foreground opacity-70">
-                    Note: Some streams may be blocked due to browser security (HTTP content on HTTPS) or CORS restrictions.
-                  </p>
+          {/* Controls Overlay */}
+          <div className={cn(
+            "absolute inset-0 z-30 flex flex-col justify-between p-4 transition-opacity duration-500",
+            showControls ? "opacity-100" : "opacity-0"
+          )}>
+            {/* Top Bar */}
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <h3 className="text-white font-bold text-lg drop-shadow-md">{title}</h3>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-red-600 hover:bg-red-700 text-white text-[10px] h-5 px-1.5 border-none animate-pulse">
+                    LIVE
+                  </Badge>
+                  <span className="text-[10px] text-white/60 font-medium tracking-widest uppercase">
+                    1080p • HLS
+                  </span>
                 </div>
               </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={toggleFullScreen}
+                className="text-white hover:bg-white/10 h-10 w-10"
+              >
+                <Maximize className="w-5 h-5" />
+              </Button>
             </div>
-          )}
 
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="flex items-center justify-between gap-4">
+            {/* Bottom Bar */}
+            <div className="flex items-center justify-between gap-6 bg-black/40 backdrop-blur-md p-3 rounded-xl border border-white/10">
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={togglePlay} className="text-white hover:bg-white/10 h-9 w-9">
-                  {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={togglePlay} 
+                  className="text-white hover:bg-white/10 h-10 w-10 rounded-full"
+                >
+                  {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current" />}
                 </Button>
                 
-                <div className="flex items-center gap-2 min-w-[120px]">
-                  <Button variant="ghost" size="icon" onClick={toggleMute} className="text-white hover:bg-white/10 h-9 w-9">
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={toggleMute} 
+                    className="text-white hover:bg-white/10 h-9 w-9"
+                  >
                     {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                   </Button>
                   <Slider
@@ -213,21 +250,24 @@ export default function StreamPlayer({ url, title }: StreamPlayerProps) {
                     max={1}
                     step={0.01}
                     onValueChange={handleVolumeChange}
-                    className="w-24"
+                    className="w-24 hidden sm:flex"
                   />
-                </div>
-                
-                <div className="ml-4 max-w-[200px] md:max-w-[400px]">
-                  <p className="text-sm font-semibold text-white truncate">{title}</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-[10px] bg-white/5 border-white/10 hidden sm:flex text-primary">
-                  LIVE
-                </Badge>
-                <Button variant="ghost" size="icon" onClick={toggleFullScreen} className="text-white hover:bg-white/10 h-9 w-9">
-                  <Maximize className="w-4 h-4" />
+              <div className="flex items-center gap-4">
+                <div className="hidden md:flex flex-col items-end">
+                  <span className="text-[10px] text-white/40 uppercase font-bold tracking-tighter">Status</span>
+                  <span className="text-xs text-green-400 font-medium">Optimal</span>
+                </div>
+                <div className="w-px h-8 bg-white/10 hidden md:block" />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white/60 hover:text-white hover:bg-white/10"
+                  onClick={() => window.location.reload()}
+                >
+                  <RotateCcw className="w-5 h-5" />
                 </Button>
               </div>
             </div>
