@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { List, Play, History, Globe, Trash2, Tv, Plus, Search, Instagram } from 'lucide-react';
+import { List, Play, History, Globe, Trash2, Tv, Plus, Search, Instagram, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,8 @@ export default function StreamGlide() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
+
+  const DEFAULT_PLAYLIST = 'https://iptv-org.github.io/iptv/index.m3u';
 
   useEffect(() => {
     const saved = localStorage.getItem('streamglide_playlists');
@@ -89,7 +91,7 @@ export default function StreamGlide() {
         <div className="flex-1 max-w-xl px-4">
           <div className="relative group">
             <Input
-              placeholder="Paste M3U link..."
+              placeholder="Paste custom M3U link..."
               value={playlistUrl}
               onChange={(e) => setPlaylistUrl(e.target.value)}
               className="h-10 text-sm bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/50 transition-all rounded-full pl-4 pr-20"
@@ -132,15 +134,26 @@ export default function StreamGlide() {
                       </span>
                     </div>
                   </div>
-                  <a 
-                    href="https://instagram.com/iamuday_x" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    <Instagram className="w-4 h-4" />
-                    @iamuday_x
-                  </a>
+                  <div className="flex items-center gap-4">
+                    <a 
+                      href="https://t.me/UdayScripts" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <Send className="w-4 h-4" />
+                      @UdayScripts
+                    </a>
+                    <a 
+                      href="https://instagram.com/iamuday_x" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <Instagram className="w-4 h-4" />
+                      @iamuday_x
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -154,22 +167,25 @@ export default function StreamGlide() {
               </div>
               
               <div className="space-y-3 max-w-sm">
-                <h2 className="text-3xl font-bold tracking-tight">Ready to Stream?</h2>
+                <h2 className="text-4xl font-bold tracking-tight">Stream Anywhere</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Paste your M3U playlist link above to unlock thousands of live channels.
+                  The ultimate destination for your favorite live channels.
                 </p>
               </div>
 
               <div className="flex flex-col gap-3 w-full max-w-xs">
-                {savedPlaylists.length === 0 && (
-                  <Button 
-                    variant="default" 
-                    className="rounded-full h-12 text-md font-bold shadow-lg shadow-primary/20"
-                    onClick={() => loadPlaylist('https://iptv-org.github.io/iptv/index.m3u')}
-                  >
-                    Try Demo Playlist
-                  </Button>
-                )}
+                <Button 
+                  variant="default" 
+                  className="rounded-full h-14 text-lg font-bold shadow-lg shadow-primary/20 group overflow-hidden relative"
+                  onClick={() => loadPlaylist(DEFAULT_PLAYLIST)}
+                  disabled={isLoading}
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    {isLoading ? "Fetching Stream..." : "Watch Now"}
+                    <Play className="w-5 h-5 fill-current group-hover:translate-x-1 transition-transform" />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Button>
               </div>
 
               {savedPlaylists.length > 0 && (
@@ -204,22 +220,35 @@ export default function StreamGlide() {
                 </div>
               )}
 
-              <footer className="pt-12 pb-4">
-                <a 
-                  href="https://instagram.com/iamuday_x" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 border border-white/5 text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/20 transition-all"
-                >
-                  <Instagram className="w-4 h-4" />
-                  Made by <span className="font-bold text-foreground ml-1">iamuday_x</span>
-                </a>
+              <footer className="pt-12 pb-4 flex flex-col items-center gap-4">
+                <div className="flex flex-wrap items-center justify-center gap-4">
+                  <a 
+                    href="https://t.me/UdayScripts" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 border border-white/5 text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/20 transition-all"
+                  >
+                    <Send className="w-4 h-4" />
+                    Join <span className="font-bold text-foreground ml-1">@UdayScripts</span>
+                  </a>
+                  <a 
+                    href="https://instagram.com/iamuday_x" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 border border-white/5 text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/20 transition-all"
+                  >
+                    <Instagram className="w-4 h-4" />
+                    Follow <span className="font-bold text-foreground ml-1">iamuday_x</span>
+                  </a>
+                </div>
+                <p className="text-[10px] text-muted-foreground/30 uppercase tracking-[0.2em] font-bold">
+                  StreamGlide Premium © 2024
+                </p>
               </footer>
             </div>
           )}
         </div>
 
-        {/* Floating Action Button for Channels */}
         {channels.length > 0 && (
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
