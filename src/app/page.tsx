@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { List, Play, History, Globe, Trash2, Tv, Plus, Search } from 'lucide-react';
+import { List, Play, History, Globe, Trash2, Tv, Plus, Search, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -132,11 +132,20 @@ export default function StreamGlide() {
                       </span>
                     </div>
                   </div>
+                  <a 
+                    href="https://instagram.com/iamuday_x" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Instagram className="w-4 h-4" />
+                    @iamuday_x
+                  </a>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-8">
+            <div className="min-h-full flex flex-col items-center justify-center p-8 text-center space-y-8">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full animate-pulse" />
                 <div className="relative w-24 h-24 bg-card rounded-3xl flex items-center justify-center border border-white/5 shadow-2xl">
@@ -194,6 +203,18 @@ export default function StreamGlide() {
                   </div>
                 </div>
               )}
+
+              <footer className="pt-12 pb-4">
+                <a 
+                  href="https://instagram.com/iamuday_x" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 border border-white/5 text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/20 transition-all"
+                >
+                  <Instagram className="w-4 h-4" />
+                  Made by <span className="font-bold text-foreground ml-1">iamuday_x</span>
+                </a>
+              </footer>
             </div>
           )}
         </div>
