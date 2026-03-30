@@ -4,7 +4,7 @@ import { GoogleTagManager, GoogleAnalytics } from '@next/third-parties/google';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'StreamGlide | Premium IPTV Experience',
+  title: 'UdayScripts | Premium IPTV Experience',
   description: 'A modern, immersive IPTV streaming player built with Next.js.',
 };
 
