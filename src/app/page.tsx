@@ -242,7 +242,7 @@ export default function StreamGlide() {
                   </a>
                 </div>
                 <p className="text-[10px] text-muted-foreground/30 uppercase tracking-[0.2em] font-bold">
-                  StreamGlide Premium © 2024
+                  StreamGlide Premium © 2026
                 </p>
               </footer>
             </div>
