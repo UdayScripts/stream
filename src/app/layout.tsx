@@ -23,8 +23,8 @@ export default function RootLayout({
       <body className="font-body antialiased bg-background text-foreground">
         {children}
         {/* Update these IDs with your actual Google Tag Manager and Analytics IDs */}
-        <GoogleTagManager gtmId="GTM-XXXXXXX" />
-        <GoogleAnalytics gaId="G-XXXXXXX" />
+        <GoogleTagManager gtmId="GTM-T2G4BG68" />
+        <GoogleAnalytics gaId="G-YP6V9PBL7G" />
       </body>
     </html>
   );
